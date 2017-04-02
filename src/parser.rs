@@ -1,3 +1,45 @@
+//! The parser module.
+//!
+//! This module contains all the machinery for turning a `Go Text Protocol`
+//! line into a `RawCommand`, or a custom variant.
+//!
+//! # Examples
+//!
+//! You can use the `parse()` function to turn a line of text into a command.
+//!
+//! ```rust
+//! use gtp::{RawCommand, parse};
+//!
+//! let line = "3 play black D5";
+//! let parsed_command: RawCommand = parse(line).unwrap();
+//!
+//! assert_eq!(parsed_command.count, Some(3));
+//! assert_eq!(parsed_command.name, "play");
+//! assert_eq!(parsed_command.args, vec!["black", "D5"]);
+//! ```
+//!
+//! You can even define your own strongly typed commands using the
+//! `typed_command!()` macro (note that the variants are **not case sensitive**).
+//!
+//! ```rust
+//! #[macro_use]
+//! extern crate gtp;
+//!
+//! use gtp::parse;
+//!
+//! custom_command!(enum MyCommand {
+//!   ShowBoard,
+//!   Quit,
+//! });
+//!
+//! fn main() {
+//!   let line = "quit";
+//!   let parsed_command: MyCommand = parse(line).unwrap();
+//!
+//!   assert_eq!(parsed_command, MyCommand::Quit);
+//! }
+//! ```
+
 use std::str::FromStr;
 
 use errors::*;
@@ -7,18 +49,28 @@ use regex::Regex;
 ///
 /// This function is generic, so you can get any type which can be coerced from
 /// a `RawCommand` using `raw_command.into()`.
-pub fn parse<C: From<RawCommand>>(src: &str) -> Result<C> {
-    let parser = Parser::new(src.to_string());
+pub fn parse<C>(src: &str) -> Result<C>
+    where C: From<RawCommand>
+{
+    let parser = Parser::new(src);
     parser.parse().map(|c| c.into())
 }
 
+/// A raw command containing the command name, an optional count, and its
+/// arguments.
 #[derive(Clone, PartialEq, Debug)]
 pub struct RawCommand {
+    /// An optional number attached to the command.
     pub count: Option<u32>,
-    pub command: String,
+
+    /// The name of the command itself.
+    pub name: String,
+
+    /// Zero or more arguments for the command.
     pub args: Vec<String>,
 }
 
+/// A line parser.
 pub struct Parser {
     src: String,
     pointer: usize,
@@ -26,9 +78,10 @@ pub struct Parser {
 
 
 impl Parser {
-    pub fn new(src: String) -> Parser {
+    /// Create a new parser to parse a line.
+    pub fn new(line: &str) -> Parser {
         Parser {
-            src: src,
+            src: line.to_string(),
             pointer: 0,
         }
     }
@@ -45,7 +98,7 @@ impl Parser {
 
             Ok(RawCommand {
                    count: count,
-                   command: identifiers[0].clone(),
+                   name: identifiers[0].clone(),
                    args: args,
                })
         }
@@ -137,7 +190,7 @@ mod tests {
     #[test]
     fn lex_number() {
         let src = "123";
-        let mut lexer = Parser::new(src.to_string());
+        let mut lexer = Parser::new(src);
         let should_be = 123;
 
         assert_eq!(lexer.pointer, 0);
@@ -150,7 +203,7 @@ mod tests {
     #[test]
     fn lex_whitespace() {
         let src = "    ";
-        let mut lexer = Parser::new(src.to_string());
+        let mut lexer = Parser::new(src);
 
         assert_eq!(lexer.pointer, 0);
         lexer.skip_whitespace().unwrap();
@@ -160,7 +213,7 @@ mod tests {
     #[test]
     fn lex_identifier() {
         let src = "asd".to_string();
-        let mut lexer = Parser::new(src.clone());
+        let mut lexer = Parser::new(src.as_str());
         let should_be = src;
 
         assert_eq!(lexer.pointer, 0);
@@ -173,7 +226,7 @@ mod tests {
     #[test]
     fn lex_a_string() {
         let src = "123 hello";
-        let mut lexer = Parser::new(src.to_string());
+        let mut lexer = Parser::new(src);
         let count_should_be = Some(123);
         let identifiers_should_be = vec!["hello".to_string()];
 
@@ -186,10 +239,10 @@ mod tests {
     #[test]
     fn parse_a_command() {
         let src = "123 hello arg1 arg2 arg3";
-        let parser = Parser::new(src.to_string());
+        let parser = Parser::new(src);
         let should_be = RawCommand {
             count: Some(123),
-            command: "hello".to_string(),
+            name: "hello".to_string(),
             args: vec!["arg1".to_string(), "arg2".to_string(), "arg3".to_string()],
         };
 
@@ -204,7 +257,7 @@ mod tests {
         let src = "123 hello arg1 arg2 arg3";
         let should_be = RawCommand {
             count: Some(123),
-            command: "hello".to_string(),
+            name: "hello".to_string(),
             args: vec!["arg1".to_string(), "arg2".to_string(), "arg3".to_string()],
         };
 
@@ -223,7 +276,7 @@ mod tests {
 
         impl From<RawCommand> for QuickCmd {
             fn from(other: RawCommand) -> Self {
-                QuickCmd(other.count, other.command, other.args)
+                QuickCmd(other.count, other.name, other.args)
             }
         }
 
