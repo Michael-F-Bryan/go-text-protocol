@@ -1,0 +1,8 @@
+[package]
+name = "gtp"
+version = "0.1.0"
+authors = ["Michael-F-Bryan <michaelfbryan@gmail.com>"]
+
+[dependencies]
+regex = "*"
+error-chain = "*"
