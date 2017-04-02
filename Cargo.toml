@@ -1,7 +1,8 @@
 [package]
-name = "gtp"
+name = "go-text-protocol"
 version = "0.1.0"
 authors = ["Michael-F-Bryan <michaelfbryan@gmail.com>"]
+description = "An implementation of the Go Text Protocol"
 
 [dependencies]
 regex = "*"

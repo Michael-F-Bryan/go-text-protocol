@@ -8,7 +8,7 @@
 //! You can use the `parse()` function to turn a line of text into a command.
 //!
 //! ```rust
-//! use gtp::{RawCommand, parse};
+//! use go_text_protocol::{RawCommand, parse};
 //!
 //! let line = "3 play black D5";
 //! let parsed_command: RawCommand = parse(line).unwrap();
@@ -23,9 +23,9 @@
 //!
 //! ```rust
 //! #[macro_use]
-//! extern crate gtp;
+//! extern crate go_text_protocol;
 //!
-//! use gtp::parse;
+//! use go_text_protocol::parse;
 //!
 //! custom_command!(enum MyCommand {
 //!   ShowBoard,

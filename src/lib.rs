@@ -22,7 +22,6 @@ custom_command!(#[doc = "My custom command"]
                });
 
 
-
 mod errors {
     error_chain!{
 
