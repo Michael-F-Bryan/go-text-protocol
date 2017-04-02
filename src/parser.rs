@@ -88,9 +88,12 @@ impl Parser {
 
     /// Parse the source string into a `RawCommand`.
     pub fn parse(mut self) -> Result<RawCommand> {
+        // Try to lex the provided string into its optional count, command, and
+        // arguments.
         let (count, mut identifiers) = self.lex()
             .chain_err(|| "Failed to parse the line into tokens")?;
 
+        // Make sure we got at least 1 identifier (i.e. the command name itself)
         if identifiers.len() < 1 {
             Err(ErrorKind::NoCommand.into())
         } else {
@@ -119,10 +122,7 @@ impl Parser {
 
         while let Some(next_token) = self.lex_identifier() {
             tokens.push(next_token);
-            if self.skip_whitespace().is_err() {
-                // we're done, stop...
-                break;
-            }
+            let _ = self.skip_whitespace();
         }
 
         Ok((count, tokens))

@@ -1,8 +1,17 @@
+// TODO: Write a macro which can turn any variant into its corresponding type
 macro_rules! variant {
-    ($name:ident) => (
+    ($name:ident) => {
         name
-
-    )
+    };
+    ($name:ident(count)) => {
+        // TODO: Finish this.
+    };
+    ($name:ident(count, args)) => {
+        // TODO: Finish this.
+    };
+    ($name:ident(args)) => {
+        // TODO: Finish this.
+    };
 }
 
 /// A macro which allows you to create your own custom command.
@@ -10,7 +19,7 @@ macro_rules! variant {
 /// Given something like this:
 ///
 /// ```rust,ignore
-/// typed_command!(enum MyCommand {
+/// custom_command!(enum MyCommand {
 ///   Play,
 ///   ShowBoard,
 /// })
